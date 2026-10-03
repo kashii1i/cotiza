@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+
+.env
+
+cotiza.db
+
+generated_pdfs/
+uploads/

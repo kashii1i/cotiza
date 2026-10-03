@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard vendedor{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Panel del vendedor</h2>
+  <div class="actions-grid">
+    <a href="{{ url_for('seller.new_quote') }}" class="action-card">Nueva cotización</a>
+    <a href="{{ url_for('seller.dashboard') }}" class="action-card">Mis cotizaciones</a>
+    <a href="{{ url_for('seller.new_sale') }}" class="action-card">Ingresar venta</a>
+    <a href="{{ url_for('seller.sales') }}" class="action-card">Mis ventas</a>
+  </div>
+  <p>
+    <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
+    <a href="{{ url_for('auth.logout') }}" class="link-btn">Cerrar sesión</a>
+  </p>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Cotizaciones{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Listado de cotizaciones</h2>
+
+  <div class="top-actions">
+    <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
+  </div>
+
+  <form method="get" class="small-form">
+    <div class="two-columns">
+      <div class="form-group">
+        <label for="q">Buscar</label>
+        <input type="text" name="q" id="q" value="{{ q }}" placeholder="Número, RUT, razón social">
+      </div>
+
+      <div class="form-group">
+        <label for="status">Estado</label>
+        <select name="status" id="status">
+          <option value="">Todos</option>
+          <option value="Pendiente" {% if status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+          <option value="Completada" {% if status == 'Completada' %}selected{% endif %}>Completada</option>
+          <option value="Concretada" {% if status == 'Concretada' %}selected{% endif %}>Concretada</option>
+          <option value="No concretada" {% if status == 'No concretada' %}selected{% endif %}>No concretada</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="primary-btn">Buscar</button>
+  </form>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Cliente</th>
+        <th>Vendedor</th>
+        <th>Estado</th>
+        <th>Total</th>
+        <th>PDF</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for quote in quotes %}
+      <tr>
+        <td>{{ quote.quote_number }}</td>
+        <td>{{ quote.client_razon_social }}</td>
+        <td>{{ quote.seller.username }}</td>
+        <td>{{ quote.status }}</td>
+        <td>${{ quote.total }}</td>
+        <td><a href="{{ url_for('seller.download_quote_pdf', quote_id=quote.id) }}">Descargar</a></td>
+        <td>
+          <form method="post" action="{{ url_for('admin.update_quote_status', quote_id=quote.id) }}">
+            <select name="status">
+              <option value="Pendiente" {% if quote.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+              <option value="Completada" {% if quote.status == 'Completada' %}selected{% endif %}>Completada</option>
+              <option value="Concretada" {% if quote.status == 'Concretada' %}selected{% endif %}>Concretada</option>
+              <option value="No concretada" {% if quote.status == 'No concretada' %}selected{% endif %}>No concretada</option>
+            </select>
+            <button type="submit" class="secondary-btn">Guardar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

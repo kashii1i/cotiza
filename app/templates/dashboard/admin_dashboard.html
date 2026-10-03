@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard administrador{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Panel de administración</h2>
+  <div class="actions-grid">
+    <a href="{{ url_for('admin.users') }}" class="action-card">Gestionar usuarios</a>
+    <a href="{{ url_for('admin.products') }}" class="action-card">Gestionar productos</a>
+    <a href="{{ url_for('admin.quotes') }}" class="action-card">Ver cotizaciones</a>
+    <a href="{{ url_for('admin.sales') }}" class="action-card">Revisar ventas</a>
+    <a href="{{ url_for('seller.new_sale') }}" class="action-card">Ingresar venta</a>
+    <a href="{{ url_for('seller.new_quote') }}" class="action-card">Crear cotización</a>
+  </div>
+  <p>
+    <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
+    <a href="{{ url_for('auth.logout') }}" class="link-btn">Cerrar sesión</a>
+  </p>
+</section>
+{% endblock %}

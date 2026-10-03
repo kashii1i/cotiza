@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Ventas{% endblock %}
+
+{% block content %}
+<section class="card sales-admin-card">
+  <div class="sales-admin-heading">
+    <div>
+      <p class="eyebrow">Administración</p>
+      <h2>Ventas registradas</h2>
+      <p class="muted">{{ sales|length }} venta{% if sales|length != 1 %}s{% endif %} ingresada{% if sales|length != 1 %}s{% endif %} por los vendedores</p>
+    </div>
+    <div class="sales-admin-actions">
+      <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-list">
+        {% for category, message in messages %}
+          <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% if sales %}
+    <div class="sales-list">
+      {% for sale in sales %}
+      <article class="sale-card">
+        <div class="sale-card-top">
+          <div>
+            <p class="sale-card-kicker">{{ sale.sale_date.strftime('%d-%m-%Y') }} · {{ sale.seller.username }}</p>
+            <h3>{{ sale.holder_name }}</h3>
+            <p class="sale-card-subtitle">{{ sale.product }} · {{ sale.holder_rut }}</p>
+          </div>
+          <div class="sale-card-total">
+            <span>Monto</span>
+            <strong>${{ '{:,.0f}'.format(sale.amount).replace(',', '.') }}</strong>
+          </div>
+        </div>
+
+        <dl class="sale-summary-grid">
+          <div><dt>Correo titular</dt><dd>{{ sale.holder_email or 'Pendiente de completar' }}</dd></div>
+          <div><dt>RUT facturación</dt><dd>{{ sale.billing_rut or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Razón social</dt><dd>{{ sale.billing_legal_name or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Giro</dt><dd>{{ sale.business_activity or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Correo facturación</dt><dd>{{ sale.billing_email or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Región / comuna</dt><dd>{{ sale.region or 'Pendiente de completar' }} / {{ sale.commune or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Dirección</dt><dd>{{ sale.address or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Teléfono</dt><dd>{{ sale.phone or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Tipo de venta</dt><dd>{{ sale.sale_type or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Medio de pago</dt><dd>{{ sale.payment_method or 'Pendiente de completar' }}</dd></div>
+          <div><dt>Correlativo</dt><dd>{{ sale.invoice_correlative or 'Pendiente de asignar' }}</dd></div>
+        </dl>
+
+        <div class="sale-card-footer">
+          <a href="{{ url_for('seller.download_sale_proof', sale_id=sale.id) }}" class="secondary-btn">Descargar comprobante</a>
+          <a href="{{ url_for('admin.export_sale', sale_id=sale.id) }}" class="secondary-btn">Descargar Excel de esta venta</a>
+          <a href="{{ url_for('admin.edit_sale', sale_id=sale.id) }}" class="primary-btn">Editar venta</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>Todavía no hay ventas</h3>
+      <p>Las ventas que ingresen los vendedores aparecerán en este listado.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

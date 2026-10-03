@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva cotización{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Nueva cotización</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-list">
+        {% for category, message in messages %}
+          <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form method="post" class="quote-form" id="quoteForm">
+    <div class="two-columns">
+      <div class="form-group">
+        <label for="client_rut">RUT</label>
+        <input type="text" name="client_rut" id="client_rut" required>
+      </div>
+
+      <div class="form-group">
+        <label for="client_razon_social">Razón social</label>
+        <input type="text" name="client_razon_social" id="client_razon_social" required>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header">
+        <h3>Productos</h3>
+        <button type="button" class="secondary-btn" id="addProductRow">Agregar producto</button>
+      </div>
+      <div id="productRows">
+        <div class="product-row">
+          <div class="form-group">
+            <label>Producto</label>
+            <select name="product_id" required>
+              <option value="">Seleccionar</option>
+              {% for product in products %}
+                <option value="{{ product.id }}">{{ product.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Valor unitario</label>
+            <input type="number" name="manual_price" min="1" step="0.01" placeholder="Ingrese valor" required>
+          </div>
+
+          <div class="form-group">
+            <label>Cantidad</label>
+            <input type="number" name="quantity" min="1" value="1" required>
+          </div>
+
+          <button type="button" class="remove-row-btn">Quitar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="discount_percent">Descuento global (%)</label>
+      <input type="number" name="discount_percent" id="discount_percent" min="0" max="100" step="1" value="0">
+    </div>
+
+    <div class="two-columns">
+      <div class="form-group">
+        <label for="payment_method">Forma de pago</label>
+        <select name="payment_method" id="payment_method">
+          <option value="Transferencia">Transferencia</option>
+          <option value="Webpay">Webpay</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="due_date">Fecha de vencimiento</label>
+        <input type="date" name="due_date" id="due_date">
+      </div>
+    </div>
+
+    <div class="two-columns">
+      <div class="form-group">
+        <label for="bank_details">Datos bancarios</label>
+        <input type="text" name="bank_details" id="bank_details" placeholder="Opcional">
+      </div>
+
+      <div class="form-group">
+        <label for="conditions">Condiciones</label>
+        <textarea name="conditions" id="conditions" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button type="submit" class="primary-btn">Generar cotización</button>
+      <a href="{{ url_for('seller.dashboard') }}" class="link-btn">Volver</a>
+    </div>
+  </form>
+</section>
+
+<script>
+  const productRows = document.getElementById('productRows');
+  const addProductRowBtn = document.getElementById('addProductRow');
+
+  function buildProductRow() {
+    const row = document.createElement('div');
+    row.className = 'product-row';
+    row.innerHTML = `
+      <div class="form-group">
+        <label>Producto</label>
+        <select name="product_id" required>
+          <option value="">Seleccionar</option>
+          {% for product in products %}
+            <option value="{{ product.id }}">{{ product.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Valor unitario</label>
+        <input type="number" name="manual_price" min="1" step="0.01" placeholder="Ingrese valor" required>
+      </div>
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" name="quantity" min="1" value="1" required>
+      </div>
+      <button type="button" class="remove-row-btn">Quitar</button>
+    `;
+
+    row.querySelector('.remove-row-btn').addEventListener('click', function () {
+      row.remove();
+    });
+
+    return row;
+  }
+
+  addProductRowBtn.addEventListener('click', function () {
+    productRows.appendChild(buildProductRow());
+  });
+
+  productRows.addEventListener('click', function (event) {
+    if (event.target.classList.contains('remove-row-btn')) {
+      const row = event.target.closest('.product-row');
+      if (productRows.children.length > 1) {
+        row.remove();
+      }
+    }
+  });
+</script>
+{% endblock %}

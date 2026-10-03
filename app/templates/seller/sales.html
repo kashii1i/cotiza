@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis ventas{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Mis ventas ingresadas</h2>
+  <div class="top-actions">
+    <a href="{{ url_for('seller.dashboard') }}" class="link-btn">Volver</a>
+    <a href="{{ url_for('seller.new_sale') }}" class="primary-btn">Ingresar venta</a>
+  </div>
+
+  {% if sales %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Cotización</th>
+          <th>Cliente</th>
+          <th>Fecha de ingreso</th>
+          <th>Correlativo</th>
+          <th>Comprobante</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td>{{ sale.quote.quote_number if sale.quote else 'Ingreso manual' }}</td>
+          <td>{{ sale.holder_name }}</td>
+          <td>{{ sale.sale_date.strftime('%d-%m-%Y') }}</td>
+          <td>{{ sale.invoice_correlative or 'Pendiente' }}</td>
+          <td><a href="{{ url_for('seller.download_sale_proof', sale_id=sale.id) }}">Descargar</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Aún no has ingresado ventas.</p>
+  {% endif %}
+</section>
+{% endblock %}

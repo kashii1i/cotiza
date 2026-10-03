@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis cotizaciones{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Mis cotizaciones</h2>
+  <div class="top-actions">
+    <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
+    <a href="{{ url_for('seller.new_quote') }}" class="primary-btn">Crear nueva cotización</a>
+  </div>
+
+  {% if quotes %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th>Total</th>
+          <th>PDF</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for quote in quotes %}
+        <tr>
+          <td>{{ quote.quote_number }}</td>
+          <td>{{ quote.client_razon_social }}</td>
+          <td>
+            <form method="post" action="{{ url_for('seller.update_quote_status', quote_id=quote.id) }}">
+              <select name="status" aria-label="Estado de {{ quote.quote_number }}">
+                <option value="Pendiente" {% if quote.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="Completada" {% if quote.status == 'Completada' %}selected{% endif %}>Completada</option>
+              </select>
+              <button type="submit" class="secondary-btn">Guardar</button>
+            </form>
+          </td>
+          <td>${{ quote.total }}</td>
+          <td><a href="{{ url_for('seller.download_quote_pdf', quote_id=quote.id) }}">Descargar</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay cotizaciones aún.</p>
+  {% endif %}
+</section>
+{% endblock %}

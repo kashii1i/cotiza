@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Productos{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2>Catálogo de productos</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-list">
+        {% for category, message in messages %}
+          <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <div class="top-actions">
+    <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
+  </div>
+
+  <form method="post" class="small-form">
+    <div class="form-group">
+      <label for="name">Producto</label>
+      <input type="text" name="name" id="name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="category">Tipo</label>
+      <select name="category" id="category">
+        <option value="general">General</option>
+        <option value="token">Vía token</option>
+        <option value="web">Vía web</option>
+        <option value="fea">FEA</option>
+        <option value="fes">FES</option>
+      </select>
+    </div>
+
+    <button type="submit" class="primary-btn">Agregar producto</button>
+  </form>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.category }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.delete_product', product_id=product.id) }}" onsubmit="return confirm('¿Eliminar este producto?')">
+            <button type="submit" class="secondary-btn">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

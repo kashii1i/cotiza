@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Cotización {{ quote.quote_number }}</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #111827; margin: 30px; }
+      h1 { font-size: 24px; }
+      .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+      th { background: #f3f4f6; }
+      .totals { margin-top: 20px; width: 300px; margin-left: auto; }
+      .totals-row { display: flex; justify-content: space-between; padding: 6px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>
+        <h1>Cotización {{ quote.quote_number }}</h1>
+        <p>Fecha: {{ quote.created_at.strftime('%d-%m-%Y') }}</p>
+      </div>
+      <div>
+        <p>Vendedor: {{ quote.seller.username }}</p>
+        <p>Estado: {{ quote.status }}</p>
+      </div>
+    </div>
+
+    <h3>Cliente</h3>
+    <p>RUT: {{ quote.client_rut }}</p>
+    <p>Razón social: {{ quote.client_razon_social }}</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in quote.items %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ item.unit_price }}</td>
+          <td>${{ item.subtotal }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="totals-row"><span>Subtotal</span> <strong>${{ quote.subtotal }}</strong></div>
+      {% if quote.discount_amount > 0 %}
+        <div class="totals-row"><span>Descuento ({{ quote.discount_percent }}%)</span> <strong>-${{ quote.discount_amount }}</strong></div>
+        <div class="totals-row"><span>Neto afecto</span> <strong>${{ quote.subtotal - quote.discount_amount }}</strong></div>
+      {% endif %}
+      <div class="totals-row"><span>IVA (19%)</span> <strong>${{ quote.iva }}</strong></div>
+      <div class="totals-row"><span>Total</span> <strong>${{ quote.total }}</strong></div>
+    </div>
+
+    <h3>Forma de pago</h3>
+    <p>{{ quote.payment_method }}</p>
+    {% if quote.bank_details %}
+      <p>Datos bancarios: {{ quote.bank_details }}</p>
+    {% endif %}
+    {% if quote.conditions %}
+      <p>Condiciones: {{ quote.conditions }}</p>
+    {% endif %}
+    {% if quote.due_date %}
+      <p>Fecha de vencimiento: {{ quote.due_date }}</p>
+    {% endif %}
+  </body>
+</html>

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar venta{% endblock %}
+
+{% block content %}
+<section class="card sale-entry-card">
+  <div class="sales-admin-heading">
+    <div>
+      <p class="eyebrow">Venta #{{ sale.id }} · {{ sale.seller.username }}</p>
+      <h2>Editar venta</h2>
+    </div>
+    <a href="{{ url_for('admin.sales') }}" class="link-btn">Volver a ventas</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-list">
+        {% for category, message in messages %}
+          <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% set values = form_data if form_data else sale %}
+  <form method="post" enctype="multipart/form-data" class="sale-form">
+    <section class="sale-form-section">
+      <h3>Datos de venta</h3>
+      <div class="sale-fields-grid">
+        <div class="form-group"><label for="sale_date">Fecha</label><input type="date" name="sale_date" id="sale_date" value="{{ values.get('sale_date', sale.sale_date.isoformat()) if form_data else sale.sale_date.isoformat() }}" required></div>
+        <div class="form-group"><label for="sale_type">Tipo de venta</label><input name="sale_type" id="sale_type" value="{{ values.get('sale_type', sale.sale_type) if form_data else sale.sale_type }}" required></div>
+        <div class="form-group"><label for="payment_method">Medio de pago</label><input name="payment_method" id="payment_method" value="{{ values.get('payment_method', sale.payment_method) if form_data else sale.payment_method }}" required></div>
+        <div class="form-group"><label for="invoice_correlative">Correlativo factura</label><input name="invoice_correlative" id="invoice_correlative" value="{{ values.get('invoice_correlative', sale.invoice_correlative or '') if form_data else sale.invoice_correlative or '' }}" maxlength="100"></div>
+      </div>
+    </section>
+
+    <section class="sale-form-section">
+      <h3>Datos del titular</h3>
+      <div class="sale-fields-grid">
+        <div class="form-group"><label for="holder_rut">RUT titular</label><input name="holder_rut" id="holder_rut" value="{{ values.get('holder_rut', sale.holder_rut) if form_data else sale.holder_rut }}" required></div>
+        <div class="form-group"><label for="holder_name">Nombre y apellido</label><input name="holder_name" id="holder_name" value="{{ values.get('holder_name', sale.holder_name) if form_data else sale.holder_name }}" required></div>
+        <div class="form-group"><label for="holder_email">Correo</label><input type="email" name="holder_email" id="holder_email" value="{{ values.get('holder_email', sale.holder_email) if form_data else sale.holder_email }}" required></div>
+        <div class="form-group"><label for="product">Producto</label><input name="product" id="product" value="{{ values.get('product', sale.product) if form_data else sale.product }}" required></div>
+        <div class="form-group"><label for="amount">Monto</label><input type="number" name="amount" id="amount" min="0" step="1" value="{{ values.get('amount', sale.amount) if form_data else sale.amount }}" required></div>
+      </div>
+    </section>
+
+    <section class="sale-form-section">
+      <h3>Datos de facturación</h3>
+      <div class="sale-fields-grid">
+        <div class="form-group"><label for="billing_rut">RUT facturación</label><input name="billing_rut" id="billing_rut" value="{{ values.get('billing_rut', sale.billing_rut) if form_data else sale.billing_rut }}" required></div>
+        <div class="form-group"><label for="billing_legal_name">Razón social</label><input name="billing_legal_name" id="billing_legal_name" value="{{ values.get('billing_legal_name', sale.billing_legal_name) if form_data else sale.billing_legal_name }}" required></div>
+        <div class="form-group"><label for="business_activity">Giro</label><input name="business_activity" id="business_activity" value="{{ values.get('business_activity', sale.business_activity) if form_data else sale.business_activity }}" required></div>
+        <div class="form-group"><label for="billing_email">Correo facturación</label><input type="email" name="billing_email" id="billing_email" value="{{ values.get('billing_email', sale.billing_email) if form_data else sale.billing_email }}" required></div>
+        <div class="form-group"><label for="region">Región</label><input name="region" id="region" value="{{ values.get('region', sale.region) if form_data else sale.region }}" required></div>
+        <div class="form-group"><label for="commune">Comuna</label><input name="commune" id="commune" value="{{ values.get('commune', sale.commune) if form_data else sale.commune }}" required></div>
+        <div class="form-group"><label for="address">Dirección</label><input name="address" id="address" value="{{ values.get('address', sale.address) if form_data else sale.address }}" required></div>
+        <div class="form-group"><label for="phone">Teléfono</label><input type="tel" name="phone" id="phone" value="{{ values.get('phone', sale.phone) if form_data else sale.phone }}" required></div>
+      </div>
+    </section>
+
+    <section class="sale-form-section">
+      <h3>Comprobante de pago</h3>
+      <p><a href="{{ url_for('seller.download_sale_proof', sale_id=sale.id) }}">Descargar comprobante actual</a></p>
+      <div class="form-group"><label for="payment_proof">Reemplazar comprobante (opcional)</label><input type="file" name="payment_proof" id="payment_proof" accept="application/pdf,image/png,image/jpeg,image/webp"></div>
+    </section>
+
+    <div class="top-actions">
+      <button type="submit" class="primary-btn">Guardar cambios</button>
+      <a href="{{ url_for('admin.sales') }}" class="link-btn">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
