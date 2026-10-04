@@ -265,6 +265,40 @@ class QuoteWorkflowTests(unittest.TestCase):
         sale = Sale.query.one()
         self.assertEqual(sale.seller_id, User.query.filter_by(username='admin').first().id)
 
+    def test_admin_filters_sales_by_creator_and_date_range(self):
+        seller_id = User.query.filter_by(username='vendedor').first().id
+        admin_id = User.query.filter_by(username='admin').first().id
+        sales = []
+        for creator_id, sale_date, holder_name in (
+            (seller_id, date(2026, 10, 1), 'Venta anterior'),
+            (seller_id, date(2026, 10, 2), 'Venta del vendedor'),
+            (admin_id, date(2026, 10, 2), 'Venta del administrador'),
+        ):
+            sales.append(Sale(
+                seller_id=creator_id,
+                payment_proof_filename='receipt.pdf',
+                **{
+                    **self.sale_form_data(),
+                    'sale_date': sale_date,
+                    'holder_name': holder_name,
+                    'amount': 85000,
+                },
+            ))
+        db.session.add_all(sales)
+        db.session.commit()
+
+        self.client.post('/logout', follow_redirects=True)
+        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        response = self.client.get(
+            f'/admin/sales?seller_id={seller_id}&from_date=2026-10-02&to_date=2026-10-02'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        self.assertIn('Venta del vendedor', html)
+        self.assertNotIn('Venta anterior', html)
+        self.assertNotIn('Venta del administrador', html)
+
     def test_sale_rejects_unsupported_payment_proof_extension(self):
         response = self.client.post(
             '/seller/sales/new',

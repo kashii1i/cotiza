@@ -8,7 +8,7 @@
     <div>
       <p class="eyebrow">Administración</p>
       <h2>Ventas registradas</h2>
-      <p class="muted">{{ sales|length }} venta{% if sales|length != 1 %}s{% endif %} ingresada{% if sales|length != 1 %}s{% endif %} por los vendedores</p>
+      <p class="muted">{{ sales|length }} venta{% if sales|length != 1 %}s{% endif %} encontrada{% if sales|length != 1 %}s{% endif %}</p>
     </div>
     <div class="sales-admin-actions">
       <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
@@ -24,6 +24,30 @@
       </ul>
     {% endif %}
   {% endwith %}
+
+  <form method="get" class="small-form">
+    <div class="two-columns">
+      <div class="form-group">
+        <label for="seller_id">Usuario que registró</label>
+        <select name="seller_id" id="seller_id">
+          <option value="">Todos</option>
+          {% for user in users %}
+            <option value="{{ user.id }}" {% if seller_id == user.id %}selected{% endif %}>{{ user.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="from_date">Desde</label>
+        <input type="date" name="from_date" id="from_date" value="{{ from_date }}">
+      </div>
+      <div class="form-group">
+        <label for="to_date">Hasta</label>
+        <input type="date" name="to_date" id="to_date" value="{{ to_date }}">
+      </div>
+    </div>
+    <button type="submit" class="primary-btn">Filtrar</button>
+    <a href="{{ url_for('admin.sales') }}" class="link-btn">Limpiar filtros</a>
+  </form>
 
   {% if sales %}
     <div class="sales-list">
@@ -65,8 +89,8 @@
     </div>
   {% else %}
     <div class="empty-state">
-      <h3>Todavía no hay ventas</h3>
-      <p>Las ventas que ingresen los vendedores aparecerán en este listado.</p>
+      <h3>No hay ventas que coincidan</h3>
+      <p>Prueba con otro usuario o rango de fechas.</p>
     </div>
   {% endif %}
 </section>

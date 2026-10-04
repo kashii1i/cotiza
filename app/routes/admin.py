@@ -1,8 +1,10 @@
 from pathlib import Path
 from io import BytesIO
+from datetime import date
 
 from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
+from flask_sqlalchemy import query
 from werkzeug.security import generate_password_hash
 
 from app.extensions import db
@@ -106,8 +108,38 @@ def quotes():
 @admin_bp.route("/sales")
 @admin_required
 def sales():
-    sales_list = Sale.query.order_by(Sale.sale_date.desc(), Sale.id.desc()).all()
-    return render_template("admin/sales.html", sales=sales_list)
+    seller_id = request.args.get("seller_id", type=int)
+    start_raw = (request.args.get("from_date") or "").strip()
+    end_raw = (request.args.get("to_date") or "").strip()
+
+    query = Sale.query
+
+    if seller_id:
+        query = query.filter(Sale.seller_id == seller_id)
+
+    if start_raw:
+        try:
+            query = query.filter(Sale.sale_date >= date.fromisoformat(start_raw))
+        except ValueError:
+            start_raw = ""
+
+    if end_raw:
+        try:
+            query = query.filter(Sale.sale_date <= date.fromisoformat(end_raw))
+        except ValueError:
+            end_raw = ""
+
+    sales_list = query.order_by(Sale.sale_date.desc(), Sale.id.desc()).all()
+    users_list = User.query.order_by(User.username.asc()).all()
+
+    return render_template(
+        "admin/sales.html",
+        sales=sales_list,
+        users=users_list,
+        seller_id=seller_id,
+        from_date=start_raw,
+        to_date=end_raw,
+    )
 
 
 @admin_bp.route("/sales/<int:sale_id>/export.xlsx")

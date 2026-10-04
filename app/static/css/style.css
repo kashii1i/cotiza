@@ -1,17 +1,17 @@
 :root {
   color-scheme: light;
-  --ink: #172923;
-  --muted: #68766f;
-  --paper: #eef2ed;
+  --ink: #3e4348;
+  --muted: #6c747b;
+  --paper: #f2f4f6;
   --surface: #ffffff;
-  --line: #d9e2db;
-  --green: #1e5d48;
-  --green-dark: #153d32;
-  --green-pale: #e8f1eb;
-  --coral: #bd6546;
-  --coral-pale: #fff1ea;
+  --line: #dce2e7;
+  --brand-blue: #277bb7;
+  --brand-blue-dark: #185783;
+  --brand-blue-pale: #eaf4fa;
+  --brand-cyan: #42aec8;
+  --brand-cyan-pale: #eaf7fa;
   --danger: #a83d38;
-  --shadow: 0 14px 36px rgba(24, 50, 39, 0.055);
+  --shadow: 0 14px 36px rgba(39, 61, 77, 0.055);
   font-family: "DM Sans", "Segoe UI", sans-serif;
   color: var(--ink);
   background: var(--paper);
@@ -26,57 +26,45 @@ body {
   margin: 0;
   color: var(--ink);
   background-color: var(--paper);
-  background-image: linear-gradient(rgba(30, 93, 72, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 93, 72, 0.025) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(39, 123, 183, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 123, 183, 0.025) 1px, transparent 1px);
   background-size: 36px 36px;
   font-size: 15px;
   line-height: 1.55;
 }
 
 .topbar {
-  color: #f6faf6;
-  background: var(--green-dark);
-  border-bottom: 3px solid var(--coral);
+  color: var(--ink);
+  background: var(--surface);
+  border-bottom: 3px solid var(--brand-blue);
 }
 
 .topbar-inner {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   max-width: 1180px;
-  min-height: 76px;
+  min-height: 82px;
   margin: 0 auto;
   padding: 12px 22px;
 }
 
-.brand-mark {
-  display: grid;
-  width: 40px;
-  aspect-ratio: 1;
-  place-items: center;
-  color: var(--green-dark);
-  background: #e9f1e9;
-  border-radius: 5px;
-  font-family: "Fraunces", Georgia, serif;
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--brand-blue-dark);
   font-size: 22px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.topbar h1,
 .topbar p {
   margin: 0;
-}
-
-.topbar h1 {
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 21px;
+  color: var(--muted);
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.15;
-}
-
-.topbar p {
-  margin-top: 3px;
-  color: #b9cec1;
-  font-size: 12px;
 }
 
 .container {
@@ -102,7 +90,7 @@ h3 {
 
 h2 {
   margin: 0 0 22px;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
   font-size: 29px;
   font-weight: 500;
   line-height: 1.2;
@@ -165,8 +153,8 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(30, 93, 72, 0.12);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(39, 123, 183, 0.12);
 }
 
 button,
@@ -192,23 +180,23 @@ button,
 
 .primary-btn {
   color: #fff;
-  background: var(--green);
+  background: var(--brand-blue);
 }
 
 .primary-btn:hover {
-  background: var(--green-dark);
+  background: var(--brand-blue-dark);
   transform: translateY(-1px);
 }
 
 .secondary-btn {
-  color: var(--green-dark);
-  background: #f2f6f2;
+  color: var(--brand-blue-dark);
+  background: #f1f6f9;
   border-color: var(--line);
 }
 
 .secondary-btn:hover,
 .remove-row-btn:hover {
-  background: var(--green-pale);
+  background: var(--brand-blue-pale);
   border-color: #b8cec0;
 }
 
@@ -220,18 +208,18 @@ button,
 
 .remove-row-btn:hover {
   color: #8d302c;
-  background: var(--coral-pale);
+  background: #fff1f0;
   border-color: #dfb6ac;
 }
 
 .link-btn {
-  color: var(--green);
+  color: var(--brand-blue);
   background: transparent;
   padding-inline: 4px;
 }
 
 .link-btn:hover {
-  color: var(--coral);
+  color: var(--brand-cyan);
 }
 
 .actions-grid {
@@ -244,23 +232,23 @@ button,
 .action-card {
   min-height: 72px;
   justify-content: flex-start;
-  color: var(--green-dark);
-  background: #f5f8f5;
+  color: var(--brand-blue-dark);
+  background: #f6f9fb;
   border-color: var(--line);
   padding: 18px;
 }
 
 .action-card::after {
   margin-left: auto;
-  color: var(--coral);
+  color: var(--brand-cyan);
   content: "→";
   font-size: 18px;
   transition: transform 150ms ease;
 }
 
 .action-card:hover {
-  background: var(--green-pale);
-  border-color: #b8cec0;
+  background: var(--brand-blue-pale);
+  border-color: #b9d7e7;
   transform: translateY(-2px);
 }
 
@@ -318,7 +306,7 @@ button,
   gap: 12px;
   margin-bottom: 10px;
   padding: 16px;
-  background: #f8faf8;
+  background: #f8fafc;
   border: 1px solid var(--line);
   border-radius: 5px;
   animation: enter 260ms ease-out both;
@@ -374,8 +362,8 @@ button,
 }
 
 .data-table th {
-  color: #52645a;
-  background: #f5f8f5;
+  color: #59636b;
+  background: #f3f6f8;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -390,7 +378,7 @@ button,
 .data-table tbody tr:nth-child(4) { animation-delay: 105ms; }
 
 .data-table tbody tr:hover {
-  background: #f8faf8;
+  background: #f8fafc;
 }
 
 .data-table td form select {
@@ -403,8 +391,8 @@ button,
   min-height: 38px;
   margin: 0;
   padding: 7px 10px;
-  color: var(--green-dark);
-  background: #f2f6f2;
+  color: var(--brand-blue-dark);
+  background: #f1f6f9;
   border: 1px solid var(--line);
   border-radius: 4px;
   cursor: pointer;
@@ -430,7 +418,7 @@ button,
 
 .sale-form-section {
   padding: 20px;
-  background: #f8faf8;
+  background: #f8fafc;
   border: 1px solid var(--line);
   border-radius: 5px;
 }
@@ -482,7 +470,7 @@ button,
 .eyebrow,
 .sale-card-kicker {
   margin: 0 0 4px;
-  color: var(--coral);
+  color: var(--brand-cyan);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -497,14 +485,14 @@ button,
   padding: 20px;
   background: #fff;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--green);
+  border-left: 4px solid var(--brand-blue);
   border-radius: 5px;
   animation: enter 300ms ease-out both;
 }
 
 .sale-card-top h3 {
   margin: 0;
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
   font-size: 21px;
   font-weight: 500;
 }
@@ -528,7 +516,7 @@ button,
 }
 
 .sale-card-total strong {
-  color: var(--green-dark);
+  color: var(--brand-blue-dark);
   font-size: 20px;
 }
 
@@ -538,8 +526,8 @@ button,
   gap: 14px 20px;
   margin: 20px 0;
   padding: 18px 0;
-  border-top: 1px solid #e6ece7;
-  border-bottom: 1px solid #e6ece7;
+  border-top: 1px solid #e4e9ed;
+  border-bottom: 1px solid #e4e9ed;
 }
 
 .sale-summary-grid div {
@@ -567,8 +555,8 @@ button,
 .empty-state {
   padding: 44px 20px;
   text-align: center;
-  background: #f8faf8;
-  border: 1px dashed #c6d3c9;
+  background: #f7f9fb;
+  border: 1px dashed #c7d4dc;
   border-radius: 5px;
 }
 
@@ -578,14 +566,14 @@ button,
 }
 
 .data-table a {
-  color: var(--green);
+  color: var(--brand-blue);
   font-weight: 700;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
 .data-table a:hover {
-  color: var(--coral);
+  color: var(--brand-cyan);
 }
 
 @keyframes enter {
@@ -594,6 +582,17 @@ button,
 }
 
 @media (max-width: 760px) {
+  .topbar-inner {
+    min-height: 72px;
+    padding-inline: 14px;
+  }
+
+  .brand-caption {
+    max-width: 100px;
+    text-align: right;
+    font-size: 11px;
+  }
+
   .container {
     margin-top: 20px;
     padding-inline: 12px;

@@ -5,19 +5,20 @@ from html import escape
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PDF_DIR = BASE_DIR / "generated_pdfs"
 PDF_DIR.mkdir(exist_ok=True)
+LOGO_PATH = BASE_DIR / "app" / "static" / "img" / "esign-logo.png"
 
 
-INK = colors.HexColor("#172923")
-GREEN = colors.HexColor("#1e5d48")
-GREEN_DARK = colors.HexColor("#153d32")
-MUTED = colors.HexColor("#68766f")
-PALE = colors.HexColor("#f2f6f2")
-LINE = colors.HexColor("#d9e2db")
+INK = colors.HexColor("#3e4348")
+BLUE = colors.HexColor("#277bb7")
+BLUE_DARK = colors.HexColor("#185783")
+MUTED = colors.HexColor("#6c747b")
+PALE = colors.HexColor("#eaf4fa")
+LINE = colors.HexColor("#dce2e7")
 
 
 def format_money(value):
@@ -45,7 +46,7 @@ def generate_quote_pdf(quote):
         fontName="Helvetica-Bold",
         fontSize=24,
         leading=28,
-        textColor=GREEN_DARK,
+        textColor=BLUE_DARK,
         alignment=0,
         spaceAfter=0,
     )
@@ -55,7 +56,7 @@ def generate_quote_pdf(quote):
         fontName="Helvetica-Bold",
         fontSize=12,
         leading=16,
-        textColor=GREEN,
+        textColor=BLUE,
     )
     number_style = ParagraphStyle(
         "QuoteNumber",
@@ -63,7 +64,7 @@ def generate_quote_pdf(quote):
         fontName="Helvetica-Bold",
         fontSize=12,
         leading=16,
-        textColor=GREEN,
+        textColor=BLUE,
         alignment=2,
     )
     date_style = ParagraphStyle(
@@ -113,7 +114,7 @@ def generate_quote_pdf(quote):
 
     header = Table([
         [
-            Paragraph("ESIGN S.A.", company_style),
+            Image(str(LOGO_PATH), width=170, height=52, kind="proportional"),
             Paragraph(f"Fecha de emisión<br/><b>{quote.created_at.strftime('%d-%m-%Y')}</b>", date_style),
         ],
         [
@@ -124,7 +125,7 @@ def generate_quote_pdf(quote):
     header.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
         ("ALIGN", (1, 0), (1, -1), "RIGHT"),
-        ("LINEBELOW", (0, -1), (-1, -1), 1.5, GREEN),
+        ("LINEBELOW", (0, -1), (-1, -1), 1.5, BLUE),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
     ]))
 
@@ -161,10 +162,10 @@ def generate_quote_pdf(quote):
     table = Table(table_data, colWidths=[245, 45, 105, 120], repeatRows=1)
     table.setStyle(
         TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), GREEN_DARK),
+            ("BACKGROUND", (0, 0), (-1, 0), BLUE_DARK),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
             ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, PALE]),
-            ("LINEBELOW", (0, 0), (-1, 0), 0.8, GREEN),
+            ("LINEBELOW", (0, 0), (-1, 0), 0.8, BLUE),
             ("LINEBELOW", (0, 1), (-1, -1), 0.4, LINE),
             ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -190,10 +191,10 @@ def generate_quote_pdf(quote):
         ("TEXTCOLOR", (0, 0), (-1, -1), INK),
         ("ALIGN", (1, 0), (1, -1), "RIGHT"),
         ("LINEABOVE", (0, 0), (-1, 0), 0.7, LINE),
-        ("LINEABOVE", (0, -1), (-1, -1), 1.2, GREEN),
+        ("LINEABOVE", (0, -1), (-1, -1), 1.2, BLUE),
         ("BACKGROUND", (0, -1), (-1, -1), PALE),
         ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-        ("TEXTCOLOR", (0, -1), (-1, -1), GREEN_DARK),
+        ("TEXTCOLOR", (0, -1), (-1, -1), BLUE_DARK),
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
         ("RIGHTPADDING", (0, 0), (-1, -1), 10),
         ("TOPPADDING", (0, 0), (-1, -1), 7),
@@ -229,7 +230,7 @@ def generate_quote_pdf(quote):
         canvas.line(document.leftMargin, 30, A4[0] - document.rightMargin, 30)
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(document.leftMargin, 18, f"Cotiza | {quote.quote_number}")
+        canvas.drawString(document.leftMargin, 18, f"ESIGN S.A. | {quote.quote_number}")
         canvas.drawRightString(A4[0] - document.rightMargin, 18, str(canvas.getPageNumber()))
         canvas.restoreState()
 
