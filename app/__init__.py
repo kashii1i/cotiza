@@ -1,9 +1,13 @@
-from flask import Flask
+from flask import Flask, render_template
 from sqlalchemy import inspect
+import logging
+import os
+import secrets
+
 from werkzeug.security import generate_password_hash
 
 from app.config import Config
-from app.extensions import db, login_manager
+from app.extensions import csrf, db, limiter, login_manager
 from app.models import Sale
 from app.models.product import Product
 from app.models.user import User
@@ -112,9 +116,36 @@ def ensure_sale_columns():
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    if not app.config.get("SECRET_KEY"):
+        if app.config["DEVELOPMENT"]:
+            app.config["SECRET_KEY"] = secrets.token_hex(32)
+            logging.getLogger(__name__).warning("SECRET_KEY ausente; se usa una clave temporal solo para desarrollo.")
+        else:
+            raise RuntimeError("SECRET_KEY es obligatoria fuera del modo desarrollo explícito.")
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
+    limiter.init_app(app)
+
+    @app.after_request
+    def add_security_headers(response):
+        response.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+            "font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; "
+            "form-action 'self'; frame-ancestors 'none'",
+        )
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        if not app.config["DEVELOPMENT"]:
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        return response
+
+    @app.errorhandler(429)
+    def handle_rate_limit(_error):
+        return render_template("auth/login.html", rate_limited=True), 429
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -138,22 +169,27 @@ def create_app():
 
 
 def seed_default_users():
-    if not User.query.filter_by(username="admin").first():
-        admin_user = User(
-            username="admin",
-            password_hash=generate_password_hash("admin123"),
-            role="admin",
-        )
-        db.session.add(admin_user)
+    if User.query.count():
+        return
 
-    if not User.query.filter_by(username="vendedor").first():
-        seller_user = User(
-            username="vendedor",
-            password_hash=generate_password_hash("vendedor123"),
-            role="seller",
+    username = os.getenv("ADMIN_USERNAME")
+    password = os.getenv("ADMIN_PASSWORD")
+    if not username or not password:
+        logging.getLogger(__name__).warning(
+            "No se creó el administrador inicial: defina ADMIN_USERNAME y ADMIN_PASSWORD."
         )
-        db.session.add(seller_user)
+        return
+    if len(password) < 12:
+        logging.getLogger(__name__).error(
+            "No se creó el administrador inicial: ADMIN_PASSWORD debe tener al menos 12 caracteres."
+        )
+        return
 
+    db.session.add(User(
+        username=username,
+        password_hash=generate_password_hash(password),
+        role="admin",
+    ))
     db.session.commit()
 
 

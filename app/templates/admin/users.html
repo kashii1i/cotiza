@@ -20,6 +20,7 @@
   </div>
 
   <form method="post" class="small-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group">
       <label for="username">Usuario</label>
       <input type="text" name="username" id="username" required>

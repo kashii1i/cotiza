@@ -5,6 +5,9 @@
 {% block content %}
 <section class="card auth-card">
   <h2>Iniciar sesión</h2>
+  {% if rate_limited %}
+    <p class="flash error">Demasiados intentos. Espera un minuto antes de volver a intentarlo.</p>
+  {% endif %}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <ul class="flash-list">
@@ -16,6 +19,7 @@
   {% endwith %}
 
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group">
       <label for="username">Usuario</label>
       <input type="text" name="username" id="username" required>

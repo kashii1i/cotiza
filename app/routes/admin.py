@@ -42,6 +42,10 @@ def users():
 
         if not username or not password:
             flash("Debe completar usuario y contraseña.", "error")
+        elif role not in {"admin", "seller"}:
+            flash("El rol seleccionado no es válido.", "error")
+        elif len(password) < 12:
+            flash("La contraseña debe tener al menos 12 caracteres.", "error")
         elif User.query.filter_by(username=username).first():
             flash("El usuario ya existe.", "error")
         else:

@@ -54,6 +54,7 @@
         <td><a href="{{ url_for('seller.download_quote_pdf', quote_id=quote.id) }}">Descargar</a></td>
         <td>
           <form method="post" action="{{ url_for('admin.update_quote_status', quote_id=quote.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <select name="status">
               <option value="Pendiente" {% if quote.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
               <option value="Completada" {% if quote.status == 'Completada' %}selected{% endif %}>Completada</option>

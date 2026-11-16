@@ -20,6 +20,7 @@
   </div>
 
   <form method="post" class="small-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group">
       <label for="name">Producto</label>
       <input type="text" name="name" id="name" required>
@@ -53,7 +54,8 @@
         <td>{{ product.name }}</td>
         <td>{{ product.category }}</td>
         <td>
-          <form method="post" action="{{ url_for('admin.delete_product', product_id=product.id) }}" onsubmit="return confirm('¿Eliminar este producto?')">
+          <form method="post" data-confirm="¿Eliminar este producto?" action="{{ url_for('admin.delete_product', product_id=product.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="secondary-btn">Eliminar</button>
           </form>
         </td>

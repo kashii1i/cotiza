@@ -16,6 +16,7 @@
   {% endwith %}
 
   <form method="post" class="quote-form" id="quoteForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="two-columns">
       <div class="form-group">
         <label for="client_rut">RUT</label>
@@ -33,7 +34,9 @@
         <h3>Productos</h3>
         <button type="button" class="secondary-btn" id="addProductRow">Agregar producto</button>
       </div>
-      <div id="productRows">
+       <div id="productRows"
+         data-product-ids="{{ products|map(attribute='id')|list|tojson|forceescape }}"
+         data-product-names="{{ products|map(attribute='name')|list|tojson|forceescape }}">
         <div class="product-row">
           <div class="form-group">
             <label>Producto</label>
@@ -99,52 +102,7 @@
   </form>
 </section>
 
-<script>
-  const productRows = document.getElementById('productRows');
-  const addProductRowBtn = document.getElementById('addProductRow');
-
-  function buildProductRow() {
-    const row = document.createElement('div');
-    row.className = 'product-row';
-    row.innerHTML = `
-      <div class="form-group">
-        <label>Producto</label>
-        <select name="product_id" required>
-          <option value="">Seleccionar</option>
-          {% for product in products %}
-            <option value="{{ product.id }}">{{ product.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Valor unitario</label>
-        <input type="number" name="manual_price" min="1" step="0.01" placeholder="Ingrese valor" required>
-      </div>
-      <div class="form-group">
-        <label>Cantidad</label>
-        <input type="number" name="quantity" min="1" value="1" required>
-      </div>
-      <button type="button" class="remove-row-btn">Quitar</button>
-    `;
-
-    row.querySelector('.remove-row-btn').addEventListener('click', function () {
-      row.remove();
-    });
-
-    return row;
-  }
-
-  addProductRowBtn.addEventListener('click', function () {
-    productRows.appendChild(buildProductRow());
-  });
-
-  productRows.addEventListener('click', function (event) {
-    if (event.target.classList.contains('remove-row-btn')) {
-      const row = event.target.closest('.product-row');
-      if (productRows.children.length > 1) {
-        row.remove();
-      }
-    }
-  });
-</script>
+{% block scripts %}
+  <script defer src="{{ url_for('static', filename='js/quote-form.js') }}"></script>
+{% endblock %}
 {% endblock %}

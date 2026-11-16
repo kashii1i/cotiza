@@ -15,7 +15,11 @@
   </div>
   <p>
     <a href="{{ url_for('main.dashboard') }}" class="link-btn">Volver</a>
-    <a href="{{ url_for('auth.logout') }}" class="link-btn">Cerrar sesión</a>
+    <a href="{{ url_for('auth.change_password') }}" class="link-btn">Cambiar contraseña</a>
+    <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="link-btn">Cerrar sesión</button>
+    </form>
   </p>
 </section>
 {% endblock %}

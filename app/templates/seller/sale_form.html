@@ -16,6 +16,7 @@
   {% endwith %}
 
   <form method="post" enctype="multipart/form-data" class="sale-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <section class="sale-form-section">
       <h3>Datos de venta</h3>
       <div class="sale-fields-grid">

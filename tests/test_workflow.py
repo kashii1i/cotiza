@@ -14,9 +14,13 @@ from app.models.quote import Quote
 from app.models.quote_item import QuoteItem
 from app.models.sale import Sale
 from app.models.user import User
+from werkzeug.security import generate_password_hash
 
 
 class QuoteWorkflowTests(unittest.TestCase):
+    admin_password = 'test-admin-password'
+    seller_password = 'test-seller-password'
+
     def setUp(self):
         self.pdf_directory = tempfile.TemporaryDirectory()
         self.pdf_directory_patch = patch(
@@ -32,13 +36,21 @@ class QuoteWorkflowTests(unittest.TestCase):
         ]
         for directory_patch in self.upload_directory_patches:
             directory_patch.start()
-        with patch.object(Config, 'SQLALCHEMY_DATABASE_URI', 'sqlite:///:memory:'):
+        with patch.object(Config, 'SQLALCHEMY_DATABASE_URI', 'sqlite:///:memory:'), \
+            patch.object(Config, 'SECRET_KEY', 'unit-test-secret-key'):
             self.app = create_app()
-        self.app.config['TESTING'] = True
+        self.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False, RATELIMIT_ENABLED=False)
         self.app_context = self.app.app_context()
         self.app_context.push()
+        db.session.add_all([
+            User(username='test-admin', password_hash=generate_password_hash(self.admin_password), role='admin'),
+            User(username='test-seller', password_hash=generate_password_hash(self.seller_password), role='seller'),
+        ])
+        db.session.commit()
         self.client = self.app.test_client()
-        self.client.post('/login', data={'username': 'vendedor', 'password': 'vendedor123'}, follow_redirects=True)
+        self.client.post('/login', data={
+            'username': 'test-seller', 'password': self.seller_password,
+        }, follow_redirects=True)
 
     def tearDown(self):
         db.session.remove()
@@ -49,7 +61,7 @@ class QuoteWorkflowTests(unittest.TestCase):
             directory_patch.stop()
         self.upload_directory.cleanup()
 
-    def create_quote(self, seller_username='vendedor'):
+    def create_quote(self, seller_username='test-seller'):
         seller = User.query.filter_by(username=seller_username).first()
         quote = Quote(
             quote_number=Quote.generate_number(),
@@ -131,7 +143,7 @@ class QuoteWorkflowTests(unittest.TestCase):
 
     def test_admin_can_update_quote_status(self):
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
 
         quote = Quote.query.first()
         if quote is None:
@@ -177,7 +189,7 @@ class QuoteWorkflowTests(unittest.TestCase):
         db.session.add_all([unused_product, quoted_product])
         db.session.flush()
 
-        seller = User.query.filter_by(username='vendedor').first()
+        seller = User.query.filter_by(username='test-seller').first()
         quote = Quote(
             quote_number=Quote.generate_number(),
             seller_id=seller.id,
@@ -202,7 +214,7 @@ class QuoteWorkflowTests(unittest.TestCase):
         db.session.commit()
 
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
         self.client.post(f'/admin/products/{unused_product.id}/delete')
         self.client.post(f'/admin/products/{quoted_product.id}/delete')
 
@@ -213,12 +225,36 @@ class QuoteWorkflowTests(unittest.TestCase):
 
     def test_admin_adds_product_without_preset_price(self):
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
         self.client.post('/admin/products', data={'name': 'Producto sin precio', 'category': 'general'})
 
         product = Product.query.filter_by(name='Producto sin precio').first()
         self.assertIsNotNone(product)
         self.assertEqual(float(product.price), 0)
+
+    def test_admin_rejects_invalid_user_role_and_short_password(self):
+        self.client.post('/logout')
+        self.client.post('/login', data={
+            'username': 'test-admin', 'password': self.admin_password,
+        })
+        invalid_role = self.client.post('/admin/users', data={
+            'username': 'invalid-role-user', 'password': 'valid-test-password', 'role': 'owner',
+        }, follow_redirects=True)
+        self.assertIn('rol seleccionado no es válido', invalid_role.get_data(as_text=True))
+        self.assertIsNone(User.query.filter_by(username='invalid-role-user').first())
+        short_password = self.client.post('/admin/users', data={
+            'username': 'short-password-user', 'password': 'short', 'role': 'seller',
+        }, follow_redirects=True)
+        self.assertIn('al menos 12 caracteres', short_password.get_data(as_text=True))
+        self.assertIsNone(User.query.filter_by(username='short-password-user').first())
+
+    def test_security_headers_are_present_and_csp_uses_local_assets(self):
+        response = self.client.get('/seller/quotes/new')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("script-src 'self'", response.headers['Content-Security-Policy'])
+        self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
+        self.assertEqual(response.headers['X-Content-Type-Options'], 'nosniff')
+        self.assertEqual(response.headers['Referrer-Policy'], 'strict-origin-when-cross-origin')
 
     def test_seller_registers_sale_with_pdf_and_admin_sets_correlative(self):
         response = self.client.post(
@@ -235,7 +271,7 @@ class QuoteWorkflowTests(unittest.TestCase):
         self.assertIsNone(sale.quote_id)
 
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
         admin_response = self.client.post(
             f'/admin/sales/{sale.id}/edit',
             data={**self.sale_form_data(), 'invoice_correlative': 'F-000184'},
@@ -248,7 +284,7 @@ class QuoteWorkflowTests(unittest.TestCase):
 
     def test_admin_can_open_and_register_a_sale(self):
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
 
         form_response = self.client.get('/seller/sales/new')
         self.assertEqual(form_response.status_code, 200)
@@ -263,11 +299,11 @@ class QuoteWorkflowTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn('/admin/sales', response.headers['Location'])
         sale = Sale.query.one()
-        self.assertEqual(sale.seller_id, User.query.filter_by(username='admin').first().id)
+        self.assertEqual(sale.seller_id, User.query.filter_by(username='test-admin').first().id)
 
     def test_admin_filters_sales_by_creator_and_date_range(self):
-        seller_id = User.query.filter_by(username='vendedor').first().id
-        admin_id = User.query.filter_by(username='admin').first().id
+        seller_id = User.query.filter_by(username='test-seller').first().id
+        admin_id = User.query.filter_by(username='test-admin').first().id
         sales = []
         for creator_id, sale_date, holder_name in (
             (seller_id, date(2026, 10, 1), 'Venta anterior'),
@@ -288,7 +324,7 @@ class QuoteWorkflowTests(unittest.TestCase):
         db.session.commit()
 
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
         response = self.client.get(
             f'/admin/sales?seller_id={seller_id}&from_date=2026-10-02&to_date=2026-10-02'
         )
@@ -325,7 +361,7 @@ class QuoteWorkflowTests(unittest.TestCase):
 
     def test_admin_downloads_one_sale_per_excel_file(self):
         sale = Sale(
-            seller_id=User.query.filter_by(username='vendedor').first().id,
+            seller_id=User.query.filter_by(username='test-seller').first().id,
             payment_proof_filename='receipt.pdf',
             **{
                 **self.sale_form_data(),
@@ -334,7 +370,7 @@ class QuoteWorkflowTests(unittest.TestCase):
             },
         )
         other_sale = Sale(
-            seller_id=User.query.filter_by(username='vendedor').first().id,
+            seller_id=User.query.filter_by(username='test-seller').first().id,
             payment_proof_filename='other-receipt.pdf',
             **{
                 **self.sale_form_data(),
@@ -346,7 +382,7 @@ class QuoteWorkflowTests(unittest.TestCase):
         db.session.add_all([sale, other_sale])
         db.session.commit()
         self.client.post('/logout', follow_redirects=True)
-        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.client.post('/login', data={'username': 'test-admin', 'password': self.admin_password}, follow_redirects=True)
 
         response = self.client.get(f'/admin/sales/{sale.id}/export.xlsx')
 

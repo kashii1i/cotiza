@@ -28,6 +28,7 @@
           <td>{{ quote.client_razon_social }}</td>
           <td>
             <form method="post" action="{{ url_for('seller.update_quote_status', quote_id=quote.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <select name="status" aria-label="Estado de {{ quote.quote_number }}">
                 <option value="Pendiente" {% if quote.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
                 <option value="Completada" {% if quote.status == 'Completada' %}selected{% endif %}>Completada</option>
