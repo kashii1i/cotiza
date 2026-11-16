@@ -267,6 +267,28 @@ class QuoteWorkflowTests(unittest.TestCase):
         self.assertIn('ya está en uso', duplicate.get_data(as_text=True))
         self.assertEqual(db.session.get(User, seller.id).username, 'renamed-seller')
 
+    def test_only_admin_can_change_user_roles(self):
+        seller = User.query.filter_by(username='test-seller').first()
+        denied = self.client.post(f'/admin/users/{seller.id}/role', data={'role': 'admin'})
+        self.assertEqual(denied.status_code, 302)
+        self.assertEqual(db.session.get(User, seller.id).role, 'seller')
+
+        self.client.post('/logout')
+        self.client.post('/login', data={
+            'username': 'test-admin', 'password': self.admin_password,
+        })
+        changed = self.client.post(f'/admin/users/{seller.id}/role', data={
+            'role': 'admin',
+        }, follow_redirects=True)
+        self.assertIn('Rol de usuario actualizado', changed.get_data(as_text=True))
+        self.assertEqual(db.session.get(User, seller.id).role, 'admin')
+
+        invalid = self.client.post(f'/admin/users/{seller.id}/role', data={
+            'role': 'owner',
+        }, follow_redirects=True)
+        self.assertIn('rol seleccionado no es válido', invalid.get_data(as_text=True))
+        self.assertEqual(db.session.get(User, seller.id).role, 'admin')
+
     def test_security_headers_are_present_and_csp_uses_local_assets(self):
         response = self.client.get('/seller/quotes/new')
         self.assertEqual(response.status_code, 200)

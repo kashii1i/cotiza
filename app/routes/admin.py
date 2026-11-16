@@ -78,6 +78,22 @@ def update_username(user_id):
     return redirect(url_for("admin.users"))
 
 
+@admin_bp.route("/users/<int:user_id>/role", methods=["POST"])
+@admin_required
+def update_user_role(user_id):
+    user = User.query.get_or_404(user_id)
+    role = request.form.get("role", "")
+
+    if role not in {"admin", "seller"}:
+        flash("El rol seleccionado no es válido.", "error")
+    else:
+        user.role = role
+        db.session.commit()
+        flash("Rol de usuario actualizado correctamente.", "success")
+
+    return redirect(url_for("admin.users"))
+
+
 @admin_bp.route("/products", methods=["GET", "POST"])
 @admin_required
 def products():

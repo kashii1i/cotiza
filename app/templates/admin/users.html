@@ -62,7 +62,17 @@
             <button type="submit" class="secondary-btn">Guardar nombre</button>
           </form>
         </td>
-        <td>{{ user.role }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.update_user_role', user_id=user.id) }}" class="small-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="visually-hidden" for="role-{{ user.id }}">Rol de {{ user.username }}</label>
+            <select name="role" id="role-{{ user.id }}">
+              <option value="seller" {% if user.role == 'seller' %}selected{% endif %}>Vendedor</option>
+              <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrador</option>
+            </select>
+            <button type="submit" class="secondary-btn">Guardar rol</button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
