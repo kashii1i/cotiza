@@ -248,6 +248,25 @@ class QuoteWorkflowTests(unittest.TestCase):
         self.assertIn('al menos 12 caracteres', short_password.get_data(as_text=True))
         self.assertIsNone(User.query.filter_by(username='short-password-user').first())
 
+    def test_admin_can_change_username_and_duplicate_is_rejected(self):
+        self.client.post('/logout')
+        self.client.post('/login', data={
+            'username': 'test-admin', 'password': self.admin_password,
+        })
+        seller = User.query.filter_by(username='test-seller').first()
+
+        changed = self.client.post(f'/admin/users/{seller.id}/username', data={
+            'username': 'renamed-seller',
+        }, follow_redirects=True)
+        self.assertIn('Nombre de usuario actualizado', changed.get_data(as_text=True))
+        self.assertEqual(db.session.get(User, seller.id).username, 'renamed-seller')
+
+        duplicate = self.client.post(f'/admin/users/{seller.id}/username', data={
+            'username': 'test-admin',
+        }, follow_redirects=True)
+        self.assertIn('ya está en uso', duplicate.get_data(as_text=True))
+        self.assertEqual(db.session.get(User, seller.id).username, 'renamed-seller')
+
     def test_security_headers_are_present_and_csp_uses_local_assets(self):
         response = self.client.get('/seller/quotes/new')
         self.assertEqual(response.status_code, 200)

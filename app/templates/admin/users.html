@@ -54,7 +54,14 @@
       {% for user in users %}
       <tr>
         <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.update_username', user_id=user.id) }}" class="small-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="visually-hidden" for="username-{{ user.id }}">Nombre de usuario de {{ user.username }}</label>
+            <input type="text" name="username" id="username-{{ user.id }}" value="{{ user.username }}" maxlength="80" required>
+            <button type="submit" class="secondary-btn">Guardar nombre</button>
+          </form>
+        </td>
         <td>{{ user.role }}</td>
       </tr>
       {% endfor %}

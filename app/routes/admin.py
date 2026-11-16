@@ -58,6 +58,26 @@ def users():
     return render_template("admin/users.html", users=users_list)
 
 
+@admin_bp.route("/users/<int:user_id>/username", methods=["POST"])
+@admin_required
+def update_username(user_id):
+    user = User.query.get_or_404(user_id)
+    username = request.form.get("username", "").strip()
+
+    if not username:
+        flash("El nombre de usuario es obligatorio.", "error")
+    elif len(username) > 80:
+        flash("El nombre de usuario no puede superar los 80 caracteres.", "error")
+    elif User.query.filter(User.username == username, User.id != user.id).first():
+        flash("El nombre de usuario ya está en uso.", "error")
+    else:
+        user.username = username
+        db.session.commit()
+        flash("Nombre de usuario actualizado correctamente.", "success")
+
+    return redirect(url_for("admin.users"))
+
+
 @admin_bp.route("/products", methods=["GET", "POST"])
 @admin_required
 def products():
